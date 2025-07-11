@@ -57,7 +57,7 @@ def update_user(userId: str, payload: schemas.UserSchema, db: Session = Depends(
 
 
 @router.get('/{userId}')
-def get_note(userId: str, db: Session = Depends(get_db)):
+def get_user(userId: str, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.id == userId).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -66,7 +66,7 @@ def get_note(userId: str, db: Session = Depends(get_db)):
 
 
 @router.delete('/{userId}')
-def delete_note(userId: str, db: Session = Depends(get_db)):
+def delete_user(userId: str, db: Session = Depends(get_db)):
     user_query = db.query(models.User).filter(models.User.id == userId)
     note = user_query.first()
     if not note:
