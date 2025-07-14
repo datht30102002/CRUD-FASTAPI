@@ -11,6 +11,18 @@ router = APIRouter()
 
 @router.get('/')
 def get_users(db: Session = Depends(get_db), limit: int = 10, page: int = 1, search: str = ''):
+
+    """
+       Retrieve a list of users with optional pagination.
+
+       Args:
+           skip (int): Number of records to skip for pagination. Defaults to 0.
+           limit (int): Maximum number of users to return. Defaults to 10.
+           db (Session): SQLAlchemy database session (injected dependency).
+
+       Returns:
+           List[UserResponse]: A list of user data objects.
+       """
     skip = (page -1) * limit
 
     users = db.query(models.User).order_by(models.User.id.asc()).filter(
@@ -25,6 +37,20 @@ def get_users(db: Session = Depends(get_db), limit: int = 10, page: int = 1, sea
 
 @router.post('/', status_code=status.HTTP_201_CREATED)
 def create_user(payload: schemas.UserCrateSchema, db: Session = Depends(get_db)):
+
+    """
+       Create new a user
+
+       Args:
+           payload (UserCrateSchema): The user data from the request body
+           db (Session): SQLAlchemy database session (injected dependency).
+
+       Returns:
+           UserCrateSchema: The newly created user object.
+
+       raises:
+               HTTPException: If user's already exists in the database.
+       """
 
     new_user = models.User(
         first_name = payload.first_name,
@@ -42,6 +68,21 @@ def create_user(payload: schemas.UserCrateSchema, db: Session = Depends(get_db))
 
 @router.patch('/{userId}')
 def update_user(userId: int, payload: schemas.UserUpdateSchema, db: Session = Depends(get_db)):
+
+    """
+           Updating the user
+
+           Args:
+               payload (UserUpdateSchema): The user data from the request body
+               db (Session): SQLAlchemy database session (injected dependency).
+
+           Returns:
+               status: "success",
+               user: The user is updated
+
+           raises:
+                   HTTPException: If user's already exists in the database.
+           """
 
     user = db.query(models.User).filter(models.User.id == userId).first()
 
@@ -62,6 +103,19 @@ def update_user(userId: int, payload: schemas.UserUpdateSchema, db: Session = De
 
 @router.get('/{userId}')
 def get_user(userId: int, db: Session = Depends(get_db)):
+    """
+        Retrieve a user by ID.
+
+        Args:
+            user_id (int): The ID of the user to retrieve.
+            db (Session): SQLAlchemy database session (dependency injection).
+
+        Returns:
+            UserResponse: The user data if found.
+
+        Raises:
+            HTTPException: If the user with the given ID does not exist.
+        """
 
     user = db.query(models.User).filter(models.User.id == userId).first()
     if not user:
@@ -73,6 +127,20 @@ def get_user(userId: int, db: Session = Depends(get_db)):
 
 @router.delete('/{userId}')
 def delete_user(userId: str, db: Session = Depends(get_db)):
+    """
+        Delete a user by ID.
+
+        Args:
+            user_id (int): The ID of the user to retrieve.
+            db (Session): SQLAlchemy database session (dependency injection).
+
+        Returns:
+            status: 200 OK
+            message: Delete user is success
+
+        Raises:
+            HTTPException: If the user with the given ID does not exist.
+        """
 
     user_query = db.query(models.User).filter(models.User.id == userId)
     note = user_query.first()
