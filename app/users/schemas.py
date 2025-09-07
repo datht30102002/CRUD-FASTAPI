@@ -17,8 +17,8 @@ class UserSchema(BaseModel):
 
 
 class UserCrateSchema(BaseModel):
-    first_name: str
-    last_name: str
+    username: str
+    password: str
 
 
 class ListUserResponse(BaseModel):
@@ -27,5 +27,6 @@ class ListUserResponse(BaseModel):
     users: List[UserSchema]
 
 
-class UserUpdateSchema(UserCrateSchema):
-    pass
+class UserUpdateSchema(BaseModel):
+    first_name: str
+    last_name: str

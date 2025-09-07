@@ -1,17 +1,35 @@
 from app.users import schemas, models
 from sqlalchemy.orm import Session
-from fastapi import Depends, HTTPException, status, APIRouter, Response
+
+from fastapi import Depends, HTTPException, status, APIRouter
+from fastapi.security import HTTPBearer
+
 from sqlalchemy.exc import IntegrityError
 from app.database import get_db
 from sqlalchemy import or_
+from passlib.context import CryptContext
+from typing import Annotated
+
+from app.auth.auth import get_current_user
+from app.users.models import User
+from app.auth.schemas import Authinfo
+from app.api_keys.routers import api_key_security
 
 
 router = APIRouter()
 
 
-@router.get('/')
-def get_users(db: Session = Depends(get_db), limit: int = 10, page: int = 1, search: str = ''):
+bcrypt_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
+user_dependency = Annotated[dict, Depends(get_current_user)]
+oauth2_bearer = HTTPBearer()
 
+
+@router.get('/')
+def get_users(db: Session = Depends(get_db),
+              auth_info: dict = Depends(api_key_security),
+              limit: int = 10,
+              page: int = 1,
+              search: str = ''):
     """
        Retrieve a list of users with optional pagination.
 
@@ -24,14 +42,16 @@ def get_users(db: Session = Depends(get_db), limit: int = 10, page: int = 1, sea
            List[UserResponse]: A list of user data objects.
        """
     skip = (page -1) * limit
-
-    users = db.query(models.User).order_by(models.User.id.asc()).filter(
+    if search is None:
+        users = db.query(User).order_by(User.id.asc()).filter().limit(limit).offset(skip).all()
+        return {'status': 'success', 'results': len(users), 'users': users}
+    users = db.query(User).order_by(User.id.asc()).filter(
         or_(
-            models.User.first_name.contains(search),
-            models.User.last_name.contains(search)
+            User.username.contains(search),
+            User.first_name.contains(search),
+            User.last_name.contains(search)
         )
     ).limit(limit).offset(skip).all()
-
     return {'status': 'success', 'results': len(users), 'users': users}
 
 
@@ -53,8 +73,8 @@ def create_user(payload: schemas.UserCrateSchema, db: Session = Depends(get_db))
        """
 
     new_user = models.User(
-        first_name = payload.first_name,
-        last_name = payload.last_name
+        username = payload.username,
+        password = bcrypt_context.hash(payload.password)
     )
     db.add(new_user)
     try:
@@ -63,7 +83,12 @@ def create_user(payload: schemas.UserCrateSchema, db: Session = Depends(get_db))
     except IntegrityError:
         db.rollback()
         raise HTTPException(status_code=400, detail="User already exists")
-    return {'status': "success", 'note': new_user}
+    return {'status': "success", 'username': new_user.username}
+
+
+@router.get('/me', description="Get Current user")
+def get_user_by_token(auth_info: Annotated[Authinfo, Depends(oauth2_bearer)]):
+    return {"status": status.HTTP_200_OK,"username":auth_info.username, "message": "OK"}
 
 
 @router.patch('/{userId}')

@@ -6,3 +6,11 @@ pydantic-core == 2.33.2
 pydantic-settings == 2.10.1
 fastapi-utils == 0.8.0
 SQLAlchemy == 2.0.23
+oauthlib == 3.2.2
+passlib == 1.7.4
+python-jose == 3.3.0
+python-multipart == 0.0.6
+starlette == 0.27.0
+slowapi == 0.1.9
+authlib == 1.6.1
+itsdangerous == 2.2.0
