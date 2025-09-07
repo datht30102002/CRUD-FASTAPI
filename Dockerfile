@@ -1,15 +1,17 @@
 FROM python:3.11-slim
 
+
+LABEL maintainer="Dat Huynh <datthuynh30102002@gmail.com>"
+LABEL app="Crud-Fastapi"
+
+
 WORKDIR /app
 
-COPY requirements.txt .
 
-RUN pip install --no-cache-dir -r requirements.txt
+COPY ./requirements.txt ./requirements.txt
 
-COPY . .
 
-EXPOSE 8000
+RUN pip install --no-cache-dir --upgrade -r ./requirements.txt
 
-ENV HOST 0.0.0.0
 
-CMD ["unvicorn","run","src","--port","8000","--host","0.0.0.0"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

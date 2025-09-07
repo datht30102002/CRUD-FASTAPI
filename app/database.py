@@ -3,18 +3,19 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from app.config import settings
 
+
 POSTGRES_URL = (
-    f"postgresql://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@{settings.POSTGRES_HOSTNAME}"
+    f"postgresql://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@db"
     f":{settings.DATABASE_PORT}/{settings.POSTGRES_DB}"
 )
-print(POSTGRES_URL)
+
+
 # Create the engine
 engine = create_engine(
     POSTGRES_URL,
     echo=True
 )
 
-print("Connecting to:", POSTGRES_URL)
 
 # Create the session
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

@@ -6,3 +6,6 @@ dev-down:
 
 server:
 	uvicorn app.main:app --reload
+
+build:
+	docker compose build
